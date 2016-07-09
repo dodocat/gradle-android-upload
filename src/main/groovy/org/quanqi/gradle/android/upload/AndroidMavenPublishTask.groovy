@@ -52,14 +52,14 @@ class AndroidMavenPublishTask extends DefaultTask {
         }
 
         if (!deploy.file.exists()) {
-            throw new GradleException(String.format("output file %1$s for variant %2$s does not exist", deploy.file, variant.name))
+            throw new GradleException(String.format('output file %1$s for variant %2$s does not exist', deploy.file, variant.name))
         }
 
         deploy.deploy(sLogger, sHttpClient)
     }
 
     def uploadMapping() {
-        if (!variant.mappingFile.exists()) {
+        if (!variant.mappingFile || !variant.mappingFile.exists()) {
             sLogger.info("skipping non-existing mapping file for variant " + variant.name)
             return
         }
