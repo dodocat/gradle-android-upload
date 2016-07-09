@@ -1,5 +1,5 @@
 group 'org.quanqi'
-version '0.2.0'
+version '0.2.1'
 
 apply plugin: 'groovy'
 apply plugin: 'maven'

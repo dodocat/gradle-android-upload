@@ -1,8 +1,11 @@
 package org.quanqi.gradle.android.upload
 
 import com.squareup.okhttp.*
+import org.gradle.api.GradleException
+import org.gradle.tooling.BuildException
 
 import java.util.concurrent.TimeUnit
+import java.util.logging.Logger
 
 /**
  * Post a single file to maven.
@@ -56,13 +59,10 @@ class MavenDeploy {
 
     File file
 
-    void deploy() {
-        if (file == null ) return
-        OkHttpClient httpClient = new OkHttpClient();
-        httpClient.setConnectTimeout(10, TimeUnit.SECONDS)
-        httpClient.setReadTimeout(60, TimeUnit.SECONDS)
+    void deploy(Logger logger, OkHttpClient httpClient) {
+        logger.info(String.format('uploading %1$s to %2$s at %3$s', file.name, repository, url))
 
-        MultipartBuilder builder = new MultipartBuilder()
+        MultipartBuilder multiPartBuilder = new MultipartBuilder()
                 .addFormDataPart('r', repository)
                 .addFormDataPart('g', group)
                 .addFormDataPart('a', artifact)
@@ -73,10 +73,27 @@ class MavenDeploy {
                 .addFormDataPart('file', file.name, RequestBody.create(MediaType.parse("maven/$packaging"), file))
                 .addFormDataPart('hasPom', 'false')
 
-        Request request = new Request.Builder().url(url)
-                .addHeader("Authorization", Credentials.basic(user, password))
-                .post(builder.build())
-                .build()
-        def response = httpClient.newCall(request).execute()
+        Response response
+        try {
+            Request.Builder requestBuilder = new Request.Builder()
+                    .url(url)
+                    .post(multiPartBuilder.build());
+
+            if (user && password) {
+                requestBuilder.addHeader("Authorization", Credentials.basic(user, password));
+            }
+
+            response = httpClient.newCall(requestBuilder.build()).execute()
+            if (response.code() >= 400) {
+                throw new GradleException(String.format('error %1$d while uploading `%2$s\'; HTTP response: %3$s',
+                        response.code(), file.name, response.body().string()))
+            }
+            logger.info(String.format('upload of `%s\' successful', file.name))
+        }
+        finally {
+            if (response != null) {
+                response.body().close()
+            }
+        }
     }
 }
