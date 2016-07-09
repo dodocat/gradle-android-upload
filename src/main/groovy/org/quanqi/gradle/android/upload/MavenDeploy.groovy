@@ -70,8 +70,8 @@ class MavenDeploy {
                 .addFormDataPart('p', packaging)
                 .addFormDataPart('e', extension)
                 .addFormDataPart('c', classifier)
-                .addFormDataPart('file', file.name, RequestBody.create(MediaType.parse("maven/$packaging"), file))
                 .addFormDataPart('hasPom', 'false')
+                .addFormDataPart('file', file.name, RequestBody.create(MediaType.parse("maven/$packaging"), file))
 
         Response response
         try {
