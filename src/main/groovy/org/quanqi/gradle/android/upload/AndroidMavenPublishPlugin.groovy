@@ -42,7 +42,6 @@ class AndroidMavenPublishPlugin implements Plugin<Project> {
             task.group = GROUP_NAME
             task.description = "publish ${variant.name} to maven"
             task.variant = variant
-            task.dependsOn(variant.assemble)
             uploadAllTask.dependsOn(task)
         }
     }
